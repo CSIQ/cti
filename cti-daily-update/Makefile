@@ -15,7 +15,7 @@ endef
 
 build:
 	@echo "Building the deployment package..."
-	uv pip compile pyproject.toml -o requirements.txt
+	uv pip compile pyproject.toml -o requirements.txt --system-certs
 	sam build
 
 deploy: build

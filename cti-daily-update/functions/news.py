@@ -354,7 +354,15 @@ def main(event, context):
         {"url": "https://feeds.feedburner.com/threatintelligence/pvexyqv7v0v", "date_format": "%a, %d %b %Y %H:%M:%S %z"},
         {"url": "https://api.msrc.microsoft.com/update-guide/RSS", "date_format": "%a, %d %b %Y %H:%M:%S %z"},
     ]
-    recipients = ["Vincent.Xu@quantatw.com", "Alfred.Chen@quantatw.com"]
+    recipients = ["Benson.Gong@quantatw.com",
+                  "Thomas.Jheng@quantatw.com", 
+                  "Tyler.Liao@quantatw.com",
+                  "alfred.chen@quantatw.com",
+                  "linda.hsu@quantatw.com",
+                  "peggy_huang@quantatw.com",
+                  "Vincent.Xu@quantatw.com",
+                  "Sean-Cheng@quantatw.com",
+                  "Dragon.Chen@quantatw.com"]
 
     all_filtered_news = []
     for rss_feed in rss_feeds:

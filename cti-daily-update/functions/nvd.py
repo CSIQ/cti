@@ -10,6 +10,11 @@ keyword_search = open(keyword_path, 'r', encoding='utf-8').read().splitlines()
 S3_BUCKET_NAME = os.environ.get("S3_BUCKET_NAME")
 IS_DRY_RUN = os.environ.get("IS_DRY_RUN", "false").lower() == "true"
 NVD_API_KEY = os.environ.get("NVD_API_KEY")
+EXCLUDED_VULN_STATUSES = {
+    "DEFERRED",
+    "AWAITING ANALYSIS",
+    "UNDERGOING ANALYSIS",
+}
 
 
 def get_score_and_severity(cve_item):
@@ -38,6 +43,10 @@ def get_score_and_severity(cve_item):
             continue
     return final_score, final_severity
 
+def should_exclude_by_status(cve_item):
+    status = str(getattr(cve_item, "vulnStatus", "")).strip().upper()
+    return status in EXCLUDED_VULN_STATUSES
+
 def search_critical_cve_data(
     start_date_for_query, end_date_for_query, NVD_API_KEY
 ):
@@ -54,6 +63,9 @@ def search_critical_cve_data(
     print(f"Found {len(cve_items)} CVEs to process.")
     critical_cve = []
     for cve in cve_items:
+        if should_exclude_by_status(cve):
+            print(f"Skip {cve.id} due to vulnStatus={getattr(cve, 'vulnStatus', 'Unknown')}")
+            continue
         score, severity = get_score_and_severity(cve)
         if severity == "CRITICAL" and cve.descriptions[0].value:
             description = cve.descriptions[0].value.replace("\n", " ").replace("\r", " ")
