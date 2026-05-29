@@ -6,7 +6,32 @@ import re
 from .utils import send_to_logic_app
 
 keyword_path = 'keyword_list.txt'
-keyword_search = open(keyword_path, 'r', encoding='utf-8').read().splitlines()
+
+def load_keywords(path):
+    if not os.path.exists(path):
+        return {}
+    with open(path, 'r', encoding='utf-8') as f:
+        lines = f.read().splitlines()
+    
+    keyword_map = {}
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+        if ':' in line:
+            parts = line.split(':', 1)
+            kw = parts[0].strip()
+            try:
+                threshold = float(parts[1].strip())
+                keyword_map[kw] = threshold
+            except ValueError:
+                # If not a valid float, treat the whole line as a keyword with default threshold
+                keyword_map[line] = 9.0
+        else:
+            keyword_map[line] = 9.0
+    return keyword_map
+
+keyword_map = load_keywords(keyword_path)
 S3_BUCKET_NAME = os.environ.get("S3_BUCKET_NAME")
 IS_DRY_RUN = os.environ.get("IS_DRY_RUN", "false").lower() == "true"
 NVD_API_KEY = os.environ.get("NVD_API_KEY")
@@ -62,15 +87,19 @@ def search_critical_cve_data(
     )
     print(f"Found {len(cve_items)} CVEs to process.")
     critical_cve = []
+    min_threshold = min(keyword_map.values()) if keyword_map else 9.0
+    
     for cve in cve_items:
         if should_exclude_by_status(cve):
-            print(f"Skip {cve.id} due to vulnStatus={getattr(cve, 'vulnStatus', 'Unknown')}")
+            # print(f"Skip {cve.id} due to vulnStatus={getattr(cve, 'vulnStatus', 'Unknown')}")
             continue
         score, severity = get_score_and_severity(cve)
-        if severity == "CRITICAL" and cve.descriptions[0].value:
+        if score >= min_threshold and cve.descriptions[0].value:
             description = cve.descriptions[0].value.replace("\n", " ").replace("\r", " ")
             match_keywords = []
-            for k in keyword_search:
+            for k, threshold in keyword_map.items():
+                if score < threshold:
+                    continue
                 k_lower = k.lower()
                 description_lower = description.lower()
                 prefix = r"\b" if k_lower[0].isalnum() else r""

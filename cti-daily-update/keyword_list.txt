@@ -194,7 +194,7 @@ MKS Platform
 TeamViewer
 Qblock
 WinMerge
-Ivanti
+Ivanti:8.0
 Dolby
 Skype
 R&S
@@ -287,7 +287,7 @@ Common Components
 Acute
 Epson
 CryptoPlugin
-Check Point
+Check Point:8.0
 QNX Software Center
 SyncUp
 FileSeek
@@ -440,3 +440,5 @@ Teamcenter
 PEAK-Drivers
 QPST
 GitLab
+FortIOS:8.0
+FortiManager:8.0
